@@ -49,19 +49,19 @@ class ReaderThread(threading.Thread):
             self.metrics.set_thread_state(self.name, 'WAITING')
             
             self.lock.acquire_read()
-            
-            start_time = time.time()
-            self.metrics.set_thread_state(self.name, 'RUNNING')
-            
-            read_value = self.resource.read()
-            
-            read_duration = random.uniform(
-                self.config['reader_work_min'],
-                self.config['reader_work_max']
-            )
-            time.sleep(read_duration)
-            
-            self.lock.release_read()
+            try:
+                start_time = time.time()
+                self.metrics.set_thread_state(self.name, 'RUNNING')
+                
+                read_value = self.resource.read()
+                
+                read_duration = random.uniform(
+                    self.config['reader_work_min'],
+                    self.config['reader_work_max']
+                )
+                time.sleep(read_duration)
+            finally:
+                self.lock.release_read()
             end_time = time.time()
             
             self.metrics.record_operation(self.name, 'READ', arrival_time, start_time, end_time)
@@ -99,21 +99,19 @@ class WriterThread(threading.Thread):
             self.metrics.set_thread_state(self.name, 'WAITING')
             
             self.lock.acquire_write()
-            
-            start_time = time.time()
-            self.metrics.set_thread_state(self.name, 'RUNNING')
-            
-            write_result = self.resource.write(self.name)
-            
-           
-            write_duration = random.uniform(
-                self.config['writer_work_min'],
-                self.config['writer_work_max']
-            )
-            time.sleep(write_duration)
-            
-            
-            self.lock.release_write()
+            try:
+                start_time = time.time()
+                self.metrics.set_thread_state(self.name, 'RUNNING')
+                
+                write_result = self.resource.write(self.name)
+                
+                write_duration = random.uniform(
+                    self.config['writer_work_min'],
+                    self.config['writer_work_max']
+                )
+                time.sleep(write_duration)
+            finally:
+                self.lock.release_write()
             end_time = time.time()
             
             self.metrics.record_operation(self.name, 'WRITE', arrival_time, start_time, end_time)
